@@ -1,10 +1,6 @@
 # This file implements ring buffer which is usually used in embedded systems for handling UART data etc.
 # See wiki to learn more about the concept of ring buffer
-
-# TODO:
-# Implement head and tail for the ring buffer
-# Check if the buffer is full before updating the tail
-# if full, then we would need to overwrite the data at the tail
+import unittest
 
 class CircularBuffer:
   
@@ -18,39 +14,94 @@ class CircularBuffer:
       self._buffer *= 10
       print("Please ensure value is non-negative and unsigned integer. Defaulting to buffer size of 10!")
 
-    self._head = 0
-    self._tail = 0
+    self._head_ptr = 0
+    self._tail_ptr = 0
     self._buff_curr_size = 0
     self._is_full = False
+
+  def movePointerForward(self, ptr_type):
+    if ptr_type == "h":
+      self._head_ptr = (self._head_ptr + 1) % self._size
+    elif ptr_type == "t":
+      self._tail_ptr = (self._tail_ptr + 1) % self._size
+    else:
+      raise SyntaxError("Invalid Pointer Type. Only head[h] or tail[t] type valid")
+    pass
   
   def isBufferFull(self):
     # Buffer is full when the head's position equals the tail's position
-    if self._head == self._tail:
-      self._is_full = True
-    else:
-      self._is_full = False
+    return self._is_full
 
-  def isBufferEmpty():
-    pass
+  def isBufferEmpty(self):
+    if self._head_ptr == self._tail_ptr and not self._is_full:
+      return True
+    else:
+      return False
 
   def writeData(self, new_data):
     # Update the new data at the head's position if not full
-    # Otherwise, if 
-    self._buffer[self._head] = new_data
-    self._head = (self._head + 1) % self._size
-    print(self._buffer)
+    # Otherwise, if full, then the tail will move forward and the data will be overwritten
+    if self.isBufferFull():
+      self.movePointerForward("t")
+
+    self._buffer[self._head_ptr] = new_data
+    self.movePointerForward("h")
+
+    if self._head_ptr == self._tail_ptr:
+      self._is_full = True
 
   def readData(self):
-    data = self._buffer[self._tail]
+
+    if self.isBufferEmpty():
+      raise Exception("Buffer is currently empty!")
+
+    # Read the data from the current tail position and then move a step forward
+    data = self._buffer[self._tail_ptr]
+    self.movePointerForward("t")
+    
+    # Since we have read the data, the buffer cannot be full
+    self._is_full = False
+
     return data
 
-if __name__ == "__main__":
-  buffer = CircularBuffer(5)
+  def displayBufferData(self):
+    msg = ""
 
-  buffer.writeData(100)
-  buffer.writeData(101)
-  buffer.writeData(102)
-  buffer.writeData(103)
-  buffer.writeData(104)
-  # Data should wraparound here since the buffer is already full
-  buffer.writeData(105)
+    for i in range(self._size):
+      msg += str(self._buffer[i]) + " "
+      if self._head_ptr == i:
+        msg += " [h] "
+      if self._tail_ptr == i:
+        msg += " [t] "
+
+      msg += " | "
+    
+    print(msg)
+
+class TestCircularBuffer(unittest.TestCase):
+
+  def create_buffer(self, size):
+    return CircularBuffer(size)
+
+  def test_small_buffer_write_read(self):
+    test_size = 5
+    test_buffer = self.create_buffer(test_size)
+    
+    # Buffer should not be full or empty during initialization
+    self.assertEqual(test_buffer.isBufferEmpty(), True)
+    test_buffer.isBufferFull()
+    self.assertEqual(test_buffer._is_full, False)
+
+    # Populate some data into the buffer to make it full
+    for i in range(test_size):
+      test_buffer.writeData(10)
+    
+    test_buffer.displayBufferData()
+    
+    test_buffer.isBufferFull()
+    self.assertEqual(test_buffer._is_full, True)
+
+    # TODO: Test data read and overwritten
+
+if __name__ == '__main__':
+  unittest.main()
