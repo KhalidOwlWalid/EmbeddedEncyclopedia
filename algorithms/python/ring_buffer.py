@@ -84,8 +84,8 @@ class TestCircularBuffer(unittest.TestCase):
     return CircularBuffer(size)
 
   def test_small_buffer_write_read(self):
-    test_size = 5
-    test_buffer = self.create_buffer(test_size)
+    n = 5
+    test_buffer = self.create_buffer(n)
     
     # Buffer should not be full or empty during initialization
     self.assertEqual(test_buffer.isBufferEmpty(), True)
@@ -93,15 +93,25 @@ class TestCircularBuffer(unittest.TestCase):
     self.assertEqual(test_buffer._is_full, False)
 
     # Populate some data into the buffer to make it full
-    for i in range(test_size):
-      test_buffer.writeData(10)
+    for i in range(n):
+      test_buffer.writeData(10 + i)
     
     test_buffer.displayBufferData()
     
     test_buffer.isBufferFull()
     self.assertEqual(test_buffer._is_full, True)
 
-    # TODO: Test data read and overwritten
+    test_buffer.readData()
+    self.assertEqual(test_buffer._tail_ptr, 1)
+    self.assertEqual(test_buffer._head_ptr, 0)
+    self.assertEqual(test_buffer._is_full, False)
+    test_buffer.displayBufferData()
+
+    test_buffer.writeData(20)
+    self.assertEqual(test_buffer._head_ptr, 1)
+    self.assertEqual(test_buffer._tail_ptr, 1)
+    self.assertEqual(test_buffer._is_full, True)
+    test_buffer.displayBufferData()
 
 if __name__ == '__main__':
   unittest.main()
