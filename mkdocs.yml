@@ -1,0 +1,20 @@
+site_name: Embedded Encyclopedia
+site_description: Contains information necessary for improving you as embedded developers
+site_url: https://KhalidOwlWalid.github.io/EmbeddedEncyclopedia/
+repo_url: https://github.com/KhalidOwlWalid/EmbeddedEncyclopedia
+edit_uri: edit/master/docs/docs
+
+### Build settings ###
+
+theme:
+  name: material
+  color_mode: dark
+
+nav:
+  - Home: index.md
+  - Hardware Theory:
+    - Pull Up and Pull Down Resistor: "hardware_theory/pull_up_down_resistor.md"
+  - Algorithms:
+    - Ring Buffer: "algorithms/ring_buffer.md"
+  - CMake Series:
+    - Understanding CMake: "understanding_cmake.md"
